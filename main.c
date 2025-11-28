@@ -22,14 +22,25 @@ void clearInputBuffer()
         ;
 }
 
+void freeall(emp **head)
+{
+    emp *curr = *head;
+    emp *nextNode;
+    while (curr != NULL)
+    {
+        nextNode = curr->next;
+        free(curr);
+        curr = nextNode;
+    }
+}
+
 emp *newNode()
 {
     emp *temp = (emp *)malloc(sizeof(emp));
 
     if (temp == NULL)
     {
-        printf("Memory Allocation Failed!\n");
-        exit(1);
+        return NULL;
     }
 
     printf("Enter the Employee ID: ");
@@ -59,22 +70,56 @@ emp *newNode()
 
 void createList(emp **head)
 {
-    emp *new_node = newNode();
 
-    if (*head == NULL)
+    if (*head != NULL)
     {
-        *head = new_node;
-    }
-    else
-    {
-        emp *curr = *head;
-        while (curr->next != NULL)
+        char choice;
+        printf("Warning: A list already exists. Overwrite it? (y/n): ");
+        scanf(" %c", &choice);
+        clearInputBuffer();
+
+        if (choice == 'y' || choice == 'Y')
         {
-            curr = curr->next;
+            freeall(head);
         }
-        curr->next = new_node;
+        else
+        {
+            printf("Operation cancelled.\n");
+            return;
+        }
     }
-    printf("Employee added successfully.\n");
+    int count;
+    printf("Enter number of Data You want to insert: ");
+    scanf("%d", &count);
+    if (count < 1)
+    {
+        printf("Operation Cancelled: Invalid Input!\n");
+        return;
+    }
+
+    while (count--)
+    {
+        emp *new_node = newNode();
+        if (new_node == NULL)
+        {
+            printf("Could not add employee: System out of memory\n");
+            return;
+        }
+        if (*head == NULL)
+        {
+            *head = new_node;
+        }
+        else
+        {
+            emp *curr = *head;
+            while (curr->next != NULL)
+            {
+                curr = curr->next;
+            }
+            curr->next = new_node;
+        }
+        printf("Employee-%d added successfully.\n", new_node->empID);
+    }
 }
 
 void display(emp *head)
@@ -133,6 +178,11 @@ void Insertion(emp **head)
     }
 
     emp *insert = newNode();
+    if (insert == NULL)
+    {
+        printf("Could not add employee: System out of memory\n");
+        return;
+    }
 
     if (position == 0)
     {
@@ -269,7 +319,6 @@ void reverse(emp **head)
 }
 
 // File Handling
-
 void saveToCSV(emp *head)
 {
     FILE *fp = fopen(FILENAME, "w");
@@ -331,18 +380,6 @@ void loadCSV(emp **head)
     fclose(fp);
 }
 
-void freeall(emp **head)
-{
-    emp *curr = *head;
-    emp *nextNode;
-    while (curr != NULL)
-    {
-        nextNode = curr->next;
-        free(curr);
-        curr = nextNode;
-    }
-}
-
 int main()
 {
     emp *head = NULL;
@@ -352,7 +389,7 @@ int main()
     {
         printf("\n+-----------------------------------------------------+\n");
         printf("|                                                     |\n");
-        printf("|+-+-+-+-+-+-+-EMPLOYEE MANAGEMENT SYSTEM+-+-+-+-+-+-+|\n");
+        printf("|              EMPLOYEE MANAGEMENT SYSTEM             |\n");
         printf("|                                                     |\n");
         printf("+-----------------------------------------------------+\n");
         printf("|            1.     Create New List                   |\n");
