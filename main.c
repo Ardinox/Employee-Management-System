@@ -14,8 +14,6 @@ typedef struct employee
     struct employee *next;
 } emp;
 
-emp *head = NULL;
-
 // Helper Function
 void clearInputBuffer()
 {
@@ -59,7 +57,7 @@ emp *newNode()
     return temp;
 }
 
-void createList()
+void createList(emp *head)
 {
     emp *new_node = newNode();
 
@@ -79,7 +77,7 @@ void createList()
     printf("Employee added successfully.\n");
 }
 
-void display()
+void display(emp *head)
 {
     emp *curr = head;
     if (head == NULL)
@@ -97,7 +95,7 @@ void display()
     }
 }
 
-void searchById()
+void searchById(emp *head)
 {
     int empId;
     emp *curr = head;
@@ -118,7 +116,7 @@ void searchById()
     printf("Employee details not Found!\n");
 }
 
-void Insertion()
+void Insertion(emp *head)
 {
     int position;
 
@@ -190,7 +188,7 @@ void Insertion()
     printf("Insertion Successful.\n");
 }
 
-void deleteEmp()
+void deleteEmp(emp *head)
 {
     if (head == NULL)
     {
@@ -246,7 +244,7 @@ void reversed_print_util(emp *curr)
     printf("+-----------------------------------------------------------------+\n");
 }
 
-void reversed_print()
+void reversed_print(emp *head)
 {
     if (head == NULL)
     {
@@ -257,7 +255,7 @@ void reversed_print()
     reversed_print_util(head);
 }
 
-void reverse()
+void reverse(emp *head)
 {
     emp *prev = NULL, *curr = head, *next = NULL;
     while (curr != NULL)
@@ -273,7 +271,7 @@ void reverse()
 
 // File Handling
 
-void saveToCSV()
+void saveToCSV(emp *head)
 {
     FILE *fp = fopen(FILENAME, "w");
     if (fp == NULL)
@@ -292,7 +290,7 @@ void saveToCSV()
     printf("Data Saved in data.csv file successfully.\n");
 }
 
-void loadCSV()
+void loadCSV(emp *head)
 {
     FILE *fp = fopen(FILENAME, "r");
     if (fp == NULL){
@@ -334,9 +332,20 @@ void loadCSV()
     printf("Database loaded from CSV.\n");
 }
 
+void freeall(emp *head){
+    emp *curr = head;
+    emp *nextNode;
+    while(curr != NULL){
+        nextNode = curr->next;
+        free(curr);
+        curr = nextNode;
+    }
+}
+
 int main()
 {
-    loadCSV();
+    emp *head = NULL;
+    loadCSV(head);
     int options = -1;
     do
     {
@@ -374,28 +383,29 @@ int main()
         switch (options)
         {
         case 1:
-            createList();
+            createList(head);
             break;
         case 2:
-            display();
+            display(head);
             break;
         case 3:
-            searchById();
+            searchById(head);
             break;
         case 4:
-            Insertion();
+            Insertion(head);
             break;
         case 5:
-            deleteEmp();
+            deleteEmp(head);
             break;
         case 6:
-            reversed_print();
+            reversed_print(head);
             break;
         case 7:
-            reverse();
+            reverse(head);
             break;
         case 8:
-            saveToCSV();
+            saveToCSV(head);
+            freeall(head);
             printf("Exiting program...\n");
             break;
         default:
