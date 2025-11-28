@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define FILENAME "data.csv"
+
 typedef struct employee
 {
     int empID;
@@ -14,10 +16,12 @@ typedef struct employee
 
 emp *head = NULL;
 
+// Helper Function
 void clearInputBuffer()
 {
     int c;
-    while ((c = getchar()) != '\n' && c != EOF);
+    while ((c = getchar()) != '\n' && c != EOF)
+        ;
 }
 
 emp *newNode()
@@ -34,9 +38,9 @@ emp *newNode()
     scanf("%d", &temp->empID);
     clearInputBuffer();
 
-    printf("Enter the Employee Name: ");
-    scanf("%49[^\n]", temp->name); 
-    clearInputBuffer(); 
+    printf("Enter the Name: ");
+    scanf("%49[^\n]", temp->name);
+    clearInputBuffer();
 
     printf("Enter the age: ");
     scanf("%d", &temp->age);
@@ -161,7 +165,7 @@ void Insertion()
         emp *curr = head;
         emp *prev = NULL;
         int curr_pos = 0;
-        
+
         while (curr != NULL && curr_pos < position)
         {
             prev = curr;
@@ -174,11 +178,12 @@ void Insertion()
             prev->next = insert;
             insert->next = curr;
         }
-        else 
+        else
         {
             printf("Position out of bounds. Appending to end instead.\n");
             emp *temp = head;
-            while(temp->next != NULL) temp = temp->next;
+            while (temp->next != NULL)
+                temp = temp->next;
             temp->next = insert;
         }
     }
@@ -187,7 +192,8 @@ void Insertion()
 
 void deleteEmp()
 {
-    if (head == NULL) {
+    if (head == NULL)
+    {
         printf("The database is empty, nothing to delete.\n");
         return;
     }
@@ -195,7 +201,7 @@ void deleteEmp()
     int empId;
     emp *curr = head;
     emp *prev = NULL;
-    
+
     printf("Enter the Employee Id to Delete: ");
     scanf("%d", &empId);
     clearInputBuffer();
@@ -227,6 +233,7 @@ void deleteEmp()
     }
 }
 
+// Recurssion Utility Function
 void reversed_print_util(emp *curr)
 {
     if (curr == NULL)
@@ -264,31 +271,95 @@ void reverse()
     printf("List reversed successfully!\n");
 }
 
+// File Handling
+
+void saveToCSV()
+{
+    FILE *fp = fopen(FILENAME, "w");
+    if (fp == NULL)
+    {
+        printf("Error opening file for writing!\n");
+        return;
+    }
+    fprintf(fp, "EmpID,Name,Age,Department,Salary\n");
+    emp *curr = head;
+    while (curr != NULL)
+    {
+        fprintf(fp, "%d,%s,%d,%s,%d\n", curr->empID, curr->name, curr->age, curr->department, curr->salary);
+        curr = curr->next;
+    }
+    fclose(fp);
+    printf("Data Saved in data.csv file successfully.\n");
+}
+
+void loadCSV()
+{
+    FILE *fp = fopen(FILENAME, "r");
+    if (fp == NULL){
+        return;
+    }
+    char buffer[200];
+    fgets(buffer, 200, fp);
+    int id, age, salary;
+    char name[50], dept[50];
+    while (fscanf(fp, "%d,%[^,],%d,%[^,],%d\n", &id, name, &age, dept, &salary)==5)
+    {
+        emp *temp = (emp *)malloc(sizeof(emp));
+        if (temp == NULL)
+        {
+            printf("Memory Allocation Failed!\n");
+            return;
+        }
+        temp->empID = id;
+        strcpy(temp->name, name);
+        temp->age = age;
+        strcpy(temp->department, dept);
+        temp->salary = salary;
+        temp->next = NULL;
+        if (head == NULL)
+        {
+            head = temp;
+        }
+        else
+        {
+            emp *curr = head;
+            while (curr->next != NULL)
+            {
+                curr = curr->next;
+            }
+            curr->next = temp;
+        }
+    }
+    fclose(fp);
+    printf("Database loaded from CSV.\n");
+}
+
 int main()
 {
+    loadCSV();
     int options = -1;
     do
     {
         printf("\n+-----------------------------------------------------+\n");
         printf("|                                                     |\n");
-        printf("|              EMPLOYEE MANAGEMENT SYSTEM             |\n");
+        printf("|+-+-+-+-+-+-+-EMPLOYEE MANAGEMENT SYSTEM+-+-+-+-+-+-+|\n");
         printf("|                                                     |\n");
         printf("+-----------------------------------------------------+\n");
-        printf("|              1. Create List (Add Node)              |\n");
+        printf("|            1.     Create New List                   |\n");
         printf("+-----------------------------------------------------+\n");
-        printf("|                2. Print All Details                 |\n");
+        printf("|            2.     Print All Details                 |\n");
         printf("+-----------------------------------------------------+\n");
-        printf("|                 3. Search By ID                     |\n");
+        printf("|            3.      Search By ID                     |\n");
         printf("+-----------------------------------------------------+\n");
-        printf("|                4. Insert new data                   |\n");
+        printf("|            4.     Insert new data                   |\n");
         printf("+-----------------------------------------------------+\n");
         printf("|            5. Delete Employee Details               |\n");
         printf("+-----------------------------------------------------+\n");
-        printf("|                 6. Reverse Print                    |\n");
+        printf("|            6.      Reverse Print                    |\n");
         printf("+-----------------------------------------------------+\n");
-        printf("|               7. Reverse the List                   |\n");
+        printf("|            7.    Reverse the List                   |\n");
         printf("+-----------------------------------------------------+\n");
-        printf("|                     8. Exit                         |\n");
+        printf("|            8.          Exit                         |\n");
         printf("+-----------------------------------------------------+\n");
         printf("Enter Your Choice: ");
 
@@ -298,7 +369,7 @@ int main()
             clearInputBuffer();
             continue;
         }
-        clearInputBuffer(); 
+        clearInputBuffer();
 
         switch (options)
         {
@@ -324,6 +395,7 @@ int main()
             reverse();
             break;
         case 8:
+            saveToCSV();
             printf("Exiting program...\n");
             break;
         default:
