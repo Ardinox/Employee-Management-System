@@ -14,6 +14,11 @@ typedef struct employee
     struct employee *next;
 } emp;
 
+typedef struct EmployeeList{
+    emp *head;
+    emp *tail;
+}EmployeeList;
+
 // Helper Function
 void clearInputBuffer()
 {
@@ -22,9 +27,9 @@ void clearInputBuffer()
         ;
 }
 
-void freeall(emp **head)
+void freeall(EmployeeList *list)
 {
-    emp *curr = *head;
+    emp *curr = list->head;
     emp *nextNode;
     while (curr != NULL)
     {
@@ -32,6 +37,8 @@ void freeall(emp **head)
         free(curr);
         curr = nextNode;
     }
+    list->head = NULL;
+    list->tail = NULL;
 }
 
 emp *newNode()
@@ -68,10 +75,10 @@ emp *newNode()
     return temp;
 }
 
-void createList(emp **head)
+void createList(EmployeeList *list)
 {
 
-    if (*head != NULL)
+    if (list->head != NULL)
     {
         char choice;
         printf("Warning: A list already exists. Overwrite it? (y/n): ");
@@ -80,7 +87,7 @@ void createList(emp **head)
 
         if (choice == 'y' || choice == 'Y')
         {
-            freeall(head);
+            freeall(list);
         }
         else
         {
@@ -105,27 +112,29 @@ void createList(emp **head)
             printf("Could not add employee: System out of memory\n");
             return;
         }
-        if (*head == NULL)
+        if (list->head == NULL)
         {
-            *head = new_node;
+            list->head = new_node;
+            list->tail = new_node;
         }
         else
         {
-            emp *curr = *head;
+            emp *curr = list->head;
             while (curr->next != NULL)
             {
                 curr = curr->next;
             }
             curr->next = new_node;
+            list->tail = new_node;
         }
         printf("Employee-%d added successfully.\n", new_node->empID);
     }
 }
 
-void display(emp *head)
+void display(EmployeeList *list)
 {
-    emp *curr = head;
-    if (head == NULL)
+    emp *curr = list->head;
+    if (list->head == NULL)
     {
         printf("The database is Empty!\n");
         return;
@@ -139,10 +148,10 @@ void display(emp *head)
     }
 }
 
-void searchById(emp *head)
+void searchById(EmployeeList *list)
 {
     int empId;
-    emp *curr = head;
+    emp *curr = list->head;
     printf("Enter the Employee Id to Search: ");
     scanf("%d", &empId);
     clearInputBuffer();
@@ -160,7 +169,7 @@ void searchById(emp *head)
     printf("Employee details not Found!\n");
 }
 
-void Insertion(emp **head)
+void Insertion(EmployeeList *list)
 {
     int position;
 
@@ -186,30 +195,31 @@ void Insertion(emp **head)
 
     if (position == 0)
     {
-        insert->next = *head;
-        *head = insert;
+        insert->next = list->head;
+        list->head = insert;
+
+        if (list->tail == NULL) {
+            list->tail = insert;
+        }
     }
 
-    else if (*head == NULL || position == -1)
+    else if (list->head == NULL || position == -1)
     {
-        if (*head == NULL)
+        if (list->head == NULL)
         {
-            *head = insert;
+            list->head = insert;
+            list->tail = insert;
         }
         else
         {
-            emp *curr = *head;
-            while (curr->next != NULL)
-            {
-                curr = curr->next;
-            }
-            curr->next = insert;
+            list->tail->next = insert;
+            list->tail = insert;
         }
     }
 
     else
     {
-        emp *curr = *head;
+        emp *curr = list->head;
         emp *prev = NULL;
         int curr_pos = 0;
 
@@ -228,25 +238,23 @@ void Insertion(emp **head)
         else
         {
             printf("Position out of bounds. Appending to end instead.\n");
-            emp *temp = *head;
-            while (temp->next != NULL)
-                temp = temp->next;
-            temp->next = insert;
+            list->tail->next = insert;
+            list->tail = insert;
         }
     }
     printf("Insertion Successful.\n");
 }
 
-void deleteEmp(emp **head)
+void deleteEmp(EmployeeList *list)
 {
-    if (*head == NULL)
+    if (list->head == NULL)
     {
         printf("The database is empty, nothing to delete.\n");
         return;
     }
 
     int empId;
-    emp *curr = *head;
+    emp *curr = list->head;
     emp *prev = NULL;
 
     printf("Enter the Employee Id to Delete: ");
@@ -255,7 +263,10 @@ void deleteEmp(emp **head)
 
     if (curr->empID == empId)
     {
-        *head = curr->next;
+        list->head = curr->next;
+        if(list->head == NULL){
+            list->tail = NULL;
+        }
         free(curr);
         printf("Deletion Successful.\n");
         return;
@@ -274,6 +285,9 @@ void deleteEmp(emp **head)
     }
     else
     {
+        if(curr == list->tail){
+            list->tail = prev;
+        }
         prev->next = curr->next;
         free(curr);
         printf("Deletion Successful.\n");
@@ -293,20 +307,25 @@ void reversed_print_util(emp *curr)
     printf("+-----------------------------------------------------+\n");
 }
 
-void reversed_print(emp *head)
+void reversed_print(EmployeeList *list)
 {
-    if (head == NULL)
+    if (list->head == NULL)
     {
         printf("The Dataset is empty.\n");
         return;
     }
     printf("+-------------------Reverse Details-------------------+\n");
-    reversed_print_util(head);
+    reversed_print_util(list->head);
 }
 
-void reverse(emp **head)
+void reverse(EmployeeList *list)
 {
-    emp *prev = NULL, *curr = *head, *next = NULL;
+    if(list->head == NULL){
+        printf("The database is Empty.\n");
+        return;
+    }
+    emp *prev = NULL, *curr = list->head, *next = NULL;
+    emp *old_head = list->head;
     while (curr != NULL)
     {
         next = curr->next;
@@ -314,12 +333,13 @@ void reverse(emp **head)
         prev = curr;
         curr = next;
     }
-    *head = prev;
+    list->head = prev;
+    list->tail = old_head;
     printf("List reversed successfully!\n");
 }
 
 // File Handling
-void saveToCSV(emp *head)
+void saveToCSV(EmployeeList *list)
 {
     FILE *fp = fopen(FILENAME, "w");
     if (fp == NULL)
@@ -328,7 +348,7 @@ void saveToCSV(emp *head)
         return;
     }
     fprintf(fp, "EmpID,Name,Age,Department,Salary\n");
-    emp *curr = head;
+    emp *curr = list->head;
     while (curr != NULL)
     {
         fprintf(fp, "%d,%s,%d,%s,%d\n", curr->empID, curr->name, curr->age, curr->department, curr->salary);
@@ -338,7 +358,7 @@ void saveToCSV(emp *head)
     printf("Data Saved in data.csv file successfully.\n");
 }
 
-void loadCSV(emp **head)
+void loadCSV(EmployeeList *list)
 {
     FILE *fp = fopen(FILENAME, "r");
     if (fp == NULL)
@@ -363,18 +383,15 @@ void loadCSV(emp **head)
         strcpy(temp->department, dept);
         temp->salary = salary;
         temp->next = NULL;
-        if (*head == NULL)
+        if (list->head == NULL)
         {
-            *head = temp;
+            list->head = temp;
+            list->tail = temp;
         }
         else
         {
-            emp *curr = *head;
-            while (curr->next != NULL)
-            {
-                curr = curr->next;
-            }
-            curr->next = temp;
+            list->tail->next = temp;
+            list->tail = temp;
         }
     }
     fclose(fp);
@@ -382,8 +399,8 @@ void loadCSV(emp **head)
 
 int main()
 {
-    emp *head = NULL;
-    loadCSV(&head);
+    EmployeeList list = {NULL, NULL};
+    loadCSV(&list);
     int options = -1;
     do
     {
@@ -421,29 +438,29 @@ int main()
         switch (options)
         {
         case 1:
-            createList(&head);
+            createList(&list);
             break;
         case 2:
-            display(head);
+            display(&list);
             break;
         case 3:
-            searchById(head);
+            searchById(&list);
             break;
         case 4:
-            Insertion(&head);
+            Insertion(&list);
             break;
         case 5:
-            deleteEmp(&head);
+            deleteEmp(&list);
             break;
         case 6:
-            reversed_print(head);
+            reversed_print(&list);
             break;
         case 7:
-            reverse(&head);
+            reverse(&list);
             break;
         case 8:
-            saveToCSV(head);
-            freeall(&head);
+            saveToCSV(&list);
+            freeall(&list);
             printf("Exiting program...\n");
             break;
         default:
