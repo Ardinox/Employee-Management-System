@@ -14,10 +14,11 @@ typedef struct employee
     struct employee *next;
 } emp;
 
-typedef struct EmployeeList{
+typedef struct EmployeeList
+{
     emp *head;
     emp *tail;
-}EmployeeList;
+} EmployeeList;
 
 // Helper Function
 void clearInputBuffer()
@@ -25,6 +26,22 @@ void clearInputBuffer()
     int c;
     while ((c = getchar()) != '\n' && c != EOF)
         ;
+}
+
+void inputString(char *buffer, int size)
+{
+    if (fgets(buffer, size, stdin) != NULL)
+    {
+        size_t len = strlen(buffer);
+        if (len > 0 && buffer[len - 1] == '\n')
+        {
+            buffer[len - 1] = '\0';
+        }
+        else
+        {
+            clearInputBuffer();
+        }
+    }
 }
 
 void freeall(EmployeeList *list)
@@ -55,16 +72,14 @@ emp *newNode()
     clearInputBuffer();
 
     printf("Enter the Name: ");
-    scanf("%49[^\n]", temp->name);
-    clearInputBuffer();
+    inputString(temp->name, 50);
 
     printf("Enter the age: ");
     scanf("%d", &temp->age);
     clearInputBuffer();
 
     printf("Enter the Department Name: ");
-    scanf("%49[^\n]", temp->department);
-    clearInputBuffer();
+    inputString(temp->department, 50);
 
     printf("Enter the Salary: ");
     scanf("%d", &temp->salary);
@@ -198,7 +213,8 @@ void Insertion(EmployeeList *list)
         insert->next = list->head;
         list->head = insert;
 
-        if (list->tail == NULL) {
+        if (list->tail == NULL)
+        {
             list->tail = insert;
         }
     }
@@ -264,7 +280,8 @@ void deleteEmp(EmployeeList *list)
     if (curr->empID == empId)
     {
         list->head = curr->next;
-        if(list->head == NULL){
+        if (list->head == NULL)
+        {
             list->tail = NULL;
         }
         free(curr);
@@ -285,7 +302,8 @@ void deleteEmp(EmployeeList *list)
     }
     else
     {
-        if(curr == list->tail){
+        if (curr == list->tail)
+        {
             list->tail = prev;
         }
         prev->next = curr->next;
@@ -320,7 +338,8 @@ void reversed_print(EmployeeList *list)
 
 void reverse(EmployeeList *list)
 {
-    if(list->head == NULL){
+    if (list->head == NULL)
+    {
         printf("The database is Empty.\n");
         return;
     }
@@ -404,25 +423,16 @@ int main()
     int options = -1;
     do
     {
-        printf("\n+-----------------------------------------------------+\n");
-        printf("|                                                     |\n");
+        printf("=======================================================\n");
         printf("|              EMPLOYEE MANAGEMENT SYSTEM             |\n");
-        printf("|                                                     |\n");
-        printf("+-----------------------------------------------------+\n");
+        printf("=======================================================\n");
         printf("|            1.     Create New List                   |\n");
-        printf("+-----------------------------------------------------+\n");
         printf("|            2.     Print All Details                 |\n");
-        printf("+-----------------------------------------------------+\n");
         printf("|            3.      Search By ID                     |\n");
-        printf("+-----------------------------------------------------+\n");
         printf("|            4.     Insert new data                   |\n");
-        printf("+-----------------------------------------------------+\n");
         printf("|            5. Delete Employee Details               |\n");
-        printf("+-----------------------------------------------------+\n");
         printf("|            6.      Reverse Print                    |\n");
-        printf("+-----------------------------------------------------+\n");
         printf("|            7.    Reverse the List                   |\n");
-        printf("+-----------------------------------------------------+\n");
         printf("|            8.          Exit                         |\n");
         printf("+-----------------------------------------------------+\n");
         printf("Enter Your Choice: ");
