@@ -1,218 +1,33 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#define FILENAME "data.csv"
-
-// UI Macros
-#ifdef _WIN32
-#define CLEAR_SCREEN "cls"
-#else
-#define CLEAR_SCREEN "clear"
-#endif
-
-typedef struct employee
-{
-    int empID;
-    int age;
-    int salary;
-    char name[50];
-    char department[50];
-    struct employee *next;
-} emp;
-
-typedef struct EmployeeList
-{
-    emp *head;
-    emp *tail;
-} EmployeeList;
-
-// --- UI Helper Functions ---
-
-void clearInputBuffer()
-{
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF)
-        ;
-}
-
-void clearScreen()
-{
-    system(CLEAR_SCREEN);
-}
-
-void waitForEnter()
-{
-    printf("\nPress [ENTER] to continue...");
-    getchar();
-}
-
-void printHeader(char *title)
-{
-    clearScreen();
-    printf("==========================================================================================================\n");
-    printf("                                         %s\n", title);
-    printf("==========================================================================================================\n");
-}
-
-// --- Validation Helpers ---
-
-int isIdUnique(EmployeeList *list, int id)
-{
-    emp *curr = list->head;
-    while (curr != NULL)
-    {
-        if (curr->empID == id)
-            return 0; // Not Unique
-        curr = curr->next;
-    }
-    return 1; // Unique
-}
-
-// BASE FUNCTION: Accepts ANY integer (Positive or Negative)
-int getValidInt(char *prompt)
-{
-    int value;
-    char buffer[100];
-    char *endptr;
-
-    while (1)
-    {
-        printf("%s", prompt);
-        if (fgets(buffer, sizeof(buffer), stdin) != NULL)
-        {
-            buffer[strcspn(buffer, "\n")] = 0;
-            if (strlen(buffer) == 0)
-            {
-                printf("(!) Input cannot be empty. Please try again.\n");
-                continue;
-            }
-
-            value = strtol(buffer, &endptr, 10);
-
-            if (endptr == buffer || *endptr != '\0')
-            {
-                printf("(!) Invalid input. Please enter a number.\n");
-            }
-            else
-            {
-                return value;
-            }
-        }
-    }
-}
-
-// WRAPPER FUNCTION:
-int getPositiveInt(char *prompt)
-{
-    int value;
-    while (1)
-    {
-        value = getValidInt(prompt);
-
-        if (value < 0)
-        {
-            printf("(!) Input must be a positive number.\n");
-        }
-        else
-        {
-            return value;
-        }
-    }
-}
-
-// --- Utility Functions ---
-
-void inputString(char *buffer, int size)
-{
-    if (fgets(buffer, size, stdin) != NULL)
-    {
-        size_t len = strlen(buffer);
-        if (len > 0 && buffer[len - 1] == '\n')
-        {
-            buffer[len - 1] = '\0';
-        }
-        else
-        {
-            clearInputBuffer();
-        }
-    }
-}
-
-void getValidString(char *prompt, char *buffer, int size)
-{
-    while (1)
-    {
-        printf("%s", prompt);
-        inputString(buffer, size);
-
-        if (strlen(buffer) == 0 || buffer[0] == ' ')
-        {
-            printf("(!) Field cannot be empty. Please try again.\n");
-        }
-        else
-        {
-            break;
-        }
-    }
-}
-
-void freeall(EmployeeList *list)
-{
-    emp *curr = list->head;
-    emp *nextNode;
-    while (curr != NULL)
-    {
-        nextNode = curr->next;
-        free(curr);
-        curr = nextNode;
-    }
-    list->head = NULL;
-    list->tail = NULL;
-}
+#include "employee.h"
 
 emp *newNode(EmployeeList *list)
 {
     emp *temp = (emp *)malloc(sizeof(emp));
-    if (temp == NULL)
-        return NULL;
+    if (temp == NULL) return NULL;
 
     printf("[NEW ENTRY]\n");
-    do
-    {
+    
+    do {
         temp->empID = getPositiveInt("Enter the Employee ID: ");
         if (!isIdUnique(list, temp->empID))
             printf("(!) Error: ID %d already exists.\n", temp->empID);
     } while (!isIdUnique(list, temp->empID));
 
-    // Name Check
     getValidString("Enter the Name: ", temp->name, 50);
 
-    do
-    {
+    do {
         temp->age = getValidInt("Enter the Age: ");
         if (temp->age < 18 || temp->age > 100)
             printf("(!) Please enter a valid age (18-100).\n");
     } while (temp->age < 18 || temp->age > 100);
 
     getValidString("Enter the Department Name: ", temp->department, 50);
-
+    
     temp->salary = getPositiveInt("Enter the Salary: ");
-
     temp->next = NULL;
+    
     return temp;
 }
-
-void reversed_print_util(emp *curr)
-{
-    if (curr == NULL)
-        return;
-    reversed_print_util(curr->next);
-    printf("%-10d | %-40s | %-4d | %-30s | %10d\n",
-           curr->empID, curr->name, curr->age, curr->department, curr->salary);
-}
-
-// --- Core Functions ---
 
 void createList(EmployeeList *list)
 {
@@ -233,9 +48,8 @@ void createList(EmployeeList *list)
             return;
         }
     }
-
+    
     int count = getValidInt("Enter number of records to add: ");
-
     if (count < 1)
     {
         printf("(!) Operation Cancelled.\n");
@@ -291,7 +105,6 @@ void display(EmployeeList *list)
 void searchById(EmployeeList *list)
 {
     printHeader("SEARCH RECORD");
-
     int empId = getPositiveInt("Enter the Employee Id to Search: ");
 
     emp *curr = list->head;
@@ -320,7 +133,7 @@ void Insertion(EmployeeList *list)
 {
     printHeader("INSERT NEW RECORD");
     printf("  0  : At Beginning\n  -1 : At End\n  N  : At Index N\n");
-
+    
     int position = getValidInt("\n  Position: ");
 
     if (position != -1 && position < 0)
@@ -394,7 +207,6 @@ void deleteEmp(EmployeeList *list)
     }
 
     int empId = getPositiveInt("Enter ID to Delete: ");
-
     emp *curr = list->head;
     emp *prev = NULL;
 
@@ -499,10 +311,8 @@ void saveToCSV(EmployeeList *list)
 void loadCSV(EmployeeList *list)
 {
     FILE *fp = fopen(FILENAME, "r");
-    if (fp == NULL)
-    {
-        return;
-    }
+    if (fp == NULL) return;
+
     char buffer[200];
     fgets(buffer, 200, fp);
     int id, age, salary;
@@ -535,62 +345,4 @@ void loadCSV(EmployeeList *list)
         }
     }
     fclose(fp);
-}
-
-int main()
-{
-    EmployeeList list = {NULL, NULL};
-    loadCSV(&list);
-    int options = -1;
-    do
-    {
-        printHeader("EMPLOYEE MANAGEMENT SYSTEM");
-        printf("|                                     1.        Create New List                                          |\n");
-        printf("|                                     2.        Print All Details                                        |\n");
-        printf("|                                     3.        Search By ID                                             |\n");
-        printf("|                                     4.        Insert new data                                          |\n");
-        printf("|                                     5.        Delete Employee Details                                  |\n");
-        printf("|                                     6.        Reverse Print                                            |\n");
-        printf("|                                     7.        Reverse the List                                         |\n");
-        printf("|                                     8.        Exit                                                     |\n");
-        printf("+--------------------------------------------------------------------------------------------------------+\n");
-
-        options = getPositiveInt("Enter Your Choice: ");
-
-        switch (options)
-        {
-        case 1:
-            createList(&list);
-            break;
-        case 2:
-            display(&list);
-            break;
-        case 3:
-            searchById(&list);
-            break;
-        case 4:
-            Insertion(&list);
-            break;
-        case 5:
-            deleteEmp(&list);
-            break;
-        case 6:
-            reversed_print(&list);
-            break;
-        case 7:
-            reverse(&list);
-            break;
-        case 8:
-            saveToCSV(&list);
-            freeall(&list);
-            printf("Exiting program...\n");
-            waitForEnter();
-            break;
-        default:
-            printf("(!) Invalid Input: Please select 1-8.\n");
-            waitForEnter();
-            break;
-        }
-    } while (options != 8);
-    return 0;
 }
